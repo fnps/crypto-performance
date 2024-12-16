@@ -34,7 +34,7 @@ public class PriceUpdateService {
         List<Asset> assets = walletService.getAllAssets();
         for (Asset asset : assets) {
             threadPool.submit(() -> {
-                log.info("Submitted request asset {}", asset.getCoinId());
+                log.info("Submitted request asset: {}", asset.getCoinId());
                 var price = coinService.getCoinCurrentPrice(asset.getCoinId());
                 price.ifPresent(curPrice -> {
                     log.info("New price for asset {}: {}", asset.getCoinId(), curPrice);
