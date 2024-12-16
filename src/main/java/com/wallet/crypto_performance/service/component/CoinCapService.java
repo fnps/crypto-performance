@@ -19,6 +19,9 @@ public class CoinCapService implements CoinService {
         this.restTemplate = restTemplate;
     }
 
+    // TODO change hardcoded uris to property
+    // TODO verify successful response before get data value
+
     @Override
     public String getCoinIdBySymbol(String symbol) {
         var response =  restTemplate.getForEntity("https://api.coincap.io/v2/assets", AssetsApiResponseDTO.class);
@@ -27,6 +30,7 @@ public class CoinCapService implements CoinService {
 
     @Override
     public BigDecimal getCoinCurrentPrice(String coinId) {
+        // TODO change hardcoded uri to property
         var response =  restTemplate.getForEntity("https://api.coincap.io/v2/assets/" + coinId, AssetByIdApiResponseDTO.class);
         return new BigDecimal(response.getBody().data().priceUsd());
     }

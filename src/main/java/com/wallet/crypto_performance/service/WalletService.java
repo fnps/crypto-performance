@@ -29,6 +29,10 @@ public class WalletService {
         return wallet.getAssets();
     }
 
+    public void updateAsset(Asset asset) {
+        assetRepository.save(asset);
+    }
+
     public List<Asset> addAssets(List<AssetDTO> assetDTOs) {
         List<Asset> assetEntities = assetDTOs.stream().map(this::convertToEntity).collect(Collectors.toList());
         List<Asset> savedAssets = assetRepository.saveAll(assetEntities);
