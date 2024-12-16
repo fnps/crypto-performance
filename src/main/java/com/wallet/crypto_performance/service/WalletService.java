@@ -2,6 +2,8 @@ package com.wallet.crypto_performance.service;
 
 import com.wallet.crypto_performance.dto.AssetDTO;
 import com.wallet.crypto_performance.dto.AssetsPerformanceDTO;
+import com.wallet.crypto_performance.exception.UnkownAssetException;
+import com.wallet.crypto_performance.exception.UnknownAssetPriceException;
 import com.wallet.crypto_performance.model.Asset;
 import com.wallet.crypto_performance.model.Wallet;
 import com.wallet.crypto_performance.repository.AssetRepository;
@@ -87,8 +89,8 @@ public class WalletService {
     }
 
     private Asset convertToEntity(AssetDTO dto) {
-        String coinId = coinService.getCoinIdBySymbol(dto.symbol());
-        BigDecimal currentPrice = coinService.getCoinCurrentPrice(coinId);
+        String coinId = coinService.getCoinIdBySymbol(dto.symbol()).orElseThrow(() -> new UnkownAssetException("The asset could not be recognized %s".formatted(dto.symbol())));
+        BigDecimal currentPrice = coinService.getCoinCurrentPrice(coinId).orElseThrow(() -> new UnknownAssetPriceException("The asset price could not be retrieved %s".formatted(dto.symbol())));
         Asset asset = new Asset();
         asset.setSymbol(dto.symbol());
         asset.setCoinId(coinId);

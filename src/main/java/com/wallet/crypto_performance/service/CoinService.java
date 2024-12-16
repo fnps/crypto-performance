@@ -2,10 +2,11 @@ package com.wallet.crypto_performance.service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Optional;
 
 public interface CoinService {
-    String getCoinIdBySymbol(String symbol);
-    BigDecimal getCoinCurrentPrice(String coinId);
-    BigDecimal getCoinPreviousPrice(Instant pastDate);
+    Optional<String> getCoinIdBySymbol(String symbol);
+    Optional<BigDecimal> getCoinCurrentPrice(String coinId);
+    Optional<BigDecimal> getCoinPreviousPrice(String coinId, Instant pastDate);
 
 }

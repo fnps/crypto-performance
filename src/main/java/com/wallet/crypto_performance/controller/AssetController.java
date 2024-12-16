@@ -26,7 +26,7 @@ public class AssetController {
     }
 
     @GetMapping("/performance")
-    public AssetsPerformanceDTO getAssestsPerformance() {
+    public AssetsPerformanceDTO getAssetsPerformance() {
         return walletService.getWalletPerformance();
     }
 
