@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -110,11 +111,11 @@ public class WalletService {
     }
 
     private List<Asset> assetsWithPastPrice(LocalDate pastDate, List<Asset> assets) {
-        var returnAssets = new ArrayList<Asset>(assets.size());
-        for (Asset asset : assets) {
+        var returnAssets = Collections.synchronizedList(new ArrayList<Asset>(assets.size()));
+        assets.parallelStream().forEach(asset -> {
             var previousPrice = coinService.getCoinPreviousPrice(asset.getCoinId(), pastDate).orElseThrow(() -> new UnknownAssetPriceException("The past asset price could not be retrieved %s".formatted(asset.getSymbol())));
             returnAssets.add(new Asset(asset.getId(), asset.getCoinId(), asset.getSymbol(), asset.getQuantity(), asset.getOriginalPrice(), previousPrice));
-        }
+        });
         return returnAssets;
     }
 
@@ -137,7 +138,7 @@ public class WalletService {
         asset.setCoinId(coinId);
         asset.setQuantity(dto.quantity());
         asset.setOriginalPrice(dto.originalPrice());
-        asset.setCurrentPrice(currentPrice); // Set the same to avoid nullable exception at database insert
+        asset.setCurrentPrice(currentPrice);
         return asset;
     }
 }
