@@ -1,13 +1,9 @@
 package com.wallet.crypto_performance.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "assets")
 public class Asset {
@@ -15,6 +11,9 @@ public class Asset {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
+    private String coinId;
 
     @Column(nullable = false)
     private String symbol;
@@ -28,4 +27,51 @@ public class Asset {
     @Column(nullable = false, name = "current_price")
     private BigDecimal currentPrice;
 
+    public Long getId() {
+        return this.id;
+    }
+
+    public String getSymbol() {
+        return this.symbol;
+    }
+
+    public BigDecimal getQuantity() {
+        return this.quantity;
+    }
+
+    public BigDecimal getOriginalPrice() {
+        return this.originalPrice;
+    }
+
+    public BigDecimal getCurrentPrice() {
+        return this.currentPrice;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
+    }
+
+    public void setQuantity(BigDecimal quantity) {
+        this.quantity = quantity;
+    }
+
+    public void setOriginalPrice(BigDecimal originalPrice) {
+        this.originalPrice = originalPrice;
+    }
+
+    public void setCurrentPrice(BigDecimal currentPrice) {
+        this.currentPrice = currentPrice;
+    }
+
+    public String getCoinId() {
+        return coinId;
+    }
+
+    public void setCoinId(String coinId) {
+        this.coinId = coinId;
+    }
 }

@@ -1,15 +1,10 @@
 package com.wallet.crypto_performance.model;
 
-import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
-
-import java.math.BigDecimal;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
 public class Wallet {
 
     private static Wallet instance;
@@ -28,11 +23,11 @@ public class Wallet {
         this.assets.add(asset);
     }
 
-    public void removeAsset(Long assetId) {
-        assets.removeIf(asset -> asset.getId().equals(assetId));
-    }
-
     public void clearAssets() {
         assets.clear();
+    }
+
+    public List<Asset> getAssets() {
+        return assets;
     }
 }
