@@ -1,6 +1,7 @@
 package com.wallet.crypto_performance.service;
 
 import com.wallet.crypto_performance.dto.AssetDTO;
+import com.wallet.crypto_performance.exception.EmptyWalletException;
 import com.wallet.crypto_performance.exception.UnknownAssetPriceException;
 import com.wallet.crypto_performance.exception.UnknownAssetException;
 import com.wallet.crypto_performance.model.Asset;
@@ -65,6 +66,11 @@ public class WalletService {
     }
 
     public AssetPerformance getWalletPerformance(LocalDate pastDate) {
+        if (getAllAssets().isEmpty()) {
+            log.error("Trying to calculate performance on empty wallet!");
+            throw new EmptyWalletException("Wallet is still empty!");
+        }
+
         var containsDate = !Objects.isNull(pastDate);
         if (containsDate) {
             var pastPerformance = performanceRepository.findByDatePerformance(pastDate);
