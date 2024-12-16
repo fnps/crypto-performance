@@ -10,7 +10,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.temporal.TemporalUnit;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -55,15 +59,16 @@ public class CoinCapService implements CoinService {
     }
 
     @Override
-    public Optional<BigDecimal> getCoinPreviousPrice(String coinId, Instant pastDate) {
+    public Optional<BigDecimal> getCoinPreviousPrice(String coinId, LocalDate pastDate) {
         log.debug("Requesting asset history by id: {}, date: {}, api: {}", coinId, pastDate, properties.getAssetByIdHistoryApi());
-        var response = restTemplate.getForEntity(properties.getAssetByIdHistoryApi(), AssetByIdApiResponseDTO.class, coinId);
+        var instant = pastDate.atStartOfDay(ZoneOffset.UTC).toInstant();
+        var response = restTemplate.getForEntity(properties.getAssetByIdHistoryApi(), AssetsApiResponseDTO.class, coinId, instant.toEpochMilli(), instant.plus(Duration.ofDays(1L)).toEpochMilli());
         if (response.getStatusCode().isError()) {
             log.error("Error requesting asset history by id, http status code: {}", response.getStatusCode().value());
             return Optional.empty();
         }
         log.debug("Success request asset history by id: {}, date: {}, api: {}", coinId, pastDate, properties.getAssetByIdHistoryApi());
         var data = Objects.requireNonNull(response.getBody(), "Null coin service api response").data();
-        return Optional.of(new BigDecimal(data.priceUsd()));
+        return Optional.of(new BigDecimal(data.get(0).priceUsd()));
     }
 }

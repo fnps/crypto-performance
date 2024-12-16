@@ -27,6 +27,18 @@ public class Asset {
     @Column(nullable = false, name = "current_price")
     private BigDecimal currentPrice;
 
+    public Asset(Long id, String coinId, String symbol, BigDecimal quantity, BigDecimal originalPrice, BigDecimal currentPrice) {
+        this.id = id;
+        this.coinId = coinId;
+        this.symbol = symbol;
+        this.quantity = quantity;
+        this.originalPrice = originalPrice;
+        this.currentPrice = currentPrice;
+    }
+
+    public Asset() {
+    }
+
     public Long getId() {
         return this.id;
     }

@@ -11,7 +11,12 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,10 +58,10 @@ public class WalletService {
         assetRepository.deleteAll();
     }
 
-    public AssetsPerformanceDTO getWalletPerformance() {
-        var assets = wallet.getAssets();
+    public AssetsPerformanceDTO getWalletPerformance(LocalDate pastDate) {
+        var containsDate = !Objects.isNull(pastDate);
+        var assets = containsDate ? assetsWithPastPrice(pastDate, wallet.getAssets()) : wallet.getAssets();
         var asset = assets.get(0);
-        // Calculate the percentage change from the asset
         var result = assetPerformance(asset);
 
         String bestAssetSymbol = asset.getSymbol(), worstAssetSymbol = asset.getSymbol();
@@ -78,11 +83,21 @@ public class WalletService {
         return new AssetsPerformanceDTO(totalValue, bestAssetSymbol, bestPerformance, worstAssetSymbol, worstPerformance);
     }
 
+    private List<Asset> assetsWithPastPrice(LocalDate pastDate, List<Asset> assets) {
+        var returnAssets = new ArrayList<Asset>(assets.size());
+        for (Asset asset : assets) {
+            var previousPrice = coinService.getCoinPreviousPrice(asset.getCoinId(), pastDate).orElseThrow(() -> new UnknownAssetPriceException("The past asset price could not be retrieved %s".formatted(asset.getSymbol())));
+            returnAssets.add(new Asset(asset.getId(), asset.getCoinId(), asset.getSymbol(), asset.getQuantity(), asset.getOriginalPrice(), previousPrice));
+        }
+        return returnAssets;
+    }
+
     private static BigDecimal assetAmount(Asset asset) {
         return asset.getQuantity().multiply(asset.getCurrentPrice());
     }
 
     private static BigDecimal assetPerformance(Asset asset) {
+        // Calculate the percentage change from the asset
         return asset.getCurrentPrice().divide(asset.getOriginalPrice(), RoundingMode.HALF_UP)
                 .subtract(BigDecimal.ONE)
                 .multiply(BigDecimal.valueOf(100L));
