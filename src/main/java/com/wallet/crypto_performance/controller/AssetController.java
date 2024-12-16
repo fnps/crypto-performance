@@ -29,28 +29,24 @@ public class AssetController {
 
     @GetMapping
     public List<AssetDTO> getAllAssets() {
-        return walletService.getAllAssets().stream().map(this::convertToDTO).collect(Collectors.toList());
+        return walletService.getAllAssets().stream().map(Asset::toDto).collect(Collectors.toList());
     }
 
     @GetMapping("/performance")
     public AssetsPerformanceDTO getAssetsPerformance(@RequestParam(required = false) String pastDateParam) throws InvalidPastDateParamException {
         var pastDate = parseISODate(pastDateParam);
-        return walletService.getWalletPerformance(pastDate);
+        return walletService.getWalletPerformance(pastDate).toDto();
     }
 
     @PostMapping
     public List<AssetDTO> addAssets(@RequestBody List<AssetDTO> assetDTOs) {
-        return walletService.addAssets(assetDTOs).stream().map(this::convertToDTO).collect(Collectors.toList());
+        return walletService.addAssets(assetDTOs).stream().map(Asset::toDto).collect(Collectors.toList());
     }
 
     @DeleteMapping
     public ResponseEntity<Void> clearWallet() {
         walletService.clearWallet();
         return ResponseEntity.noContent().build();
-    }
-
-    private AssetDTO convertToDTO(Asset asset) {
-        return new AssetDTO(asset.getSymbol(), asset.getQuantity(), asset.getOriginalPrice());
     }
 
     private static LocalDate parseISODate(String date) throws InvalidPastDateParamException {

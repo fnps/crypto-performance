@@ -1,5 +1,6 @@
 package com.wallet.crypto_performance.model;
 
+import com.wallet.crypto_performance.dto.AssetDTO;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -86,4 +87,9 @@ public class Asset {
     public void setCoinId(String coinId) {
         this.coinId = coinId;
     }
+
+    public AssetDTO toDto() {
+        return new AssetDTO(symbol, quantity, originalPrice);
+    }
+
 }

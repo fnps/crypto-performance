@@ -1,33 +1,38 @@
 package com.wallet.crypto_performance.service;
 
 import com.wallet.crypto_performance.dto.AssetDTO;
-import com.wallet.crypto_performance.dto.AssetsPerformanceDTO;
-import com.wallet.crypto_performance.exception.UnkownAssetException;
 import com.wallet.crypto_performance.exception.UnknownAssetPriceException;
+import com.wallet.crypto_performance.exception.UnkownAssetException;
 import com.wallet.crypto_performance.model.Asset;
+import com.wallet.crypto_performance.model.AssetPerformance;
 import com.wallet.crypto_performance.model.Wallet;
 import com.wallet.crypto_performance.repository.AssetRepository;
+import com.wallet.crypto_performance.repository.PerformanceRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class WalletService {
 
+    private static final Logger log = LoggerFactory.getLogger(WalletService.class);
     private final AssetRepository assetRepository;
+    private final PerformanceRepository performanceRepository;
     private final CoinService coinService;
     private final Wallet wallet;
 
-    public WalletService(AssetRepository assetRepository, CoinService coinService) {
+    public WalletService(AssetRepository assetRepository, PerformanceRepository performanceRepository, CoinService coinService) {
         this.assetRepository = assetRepository;
+        this.performanceRepository = performanceRepository;
         this.coinService = coinService;
         this.wallet = Wallet.getInstance();
     }
@@ -58,9 +63,30 @@ public class WalletService {
         assetRepository.deleteAll();
     }
 
-    public AssetsPerformanceDTO getWalletPerformance(LocalDate pastDate) {
+    public AssetPerformance getWalletPerformance(LocalDate pastDate) {
         var containsDate = !Objects.isNull(pastDate);
+        if (containsDate) {
+            var pastPerformance = performanceRepository.findByDatePerformance(pastDate);
+            if (pastPerformance.isPresent()) return pastPerformance.get();
+        }
         var assets = containsDate ? assetsWithPastPrice(pastDate, wallet.getAssets()) : wallet.getAssets();
+        var assetPerformance = calculateAssetsPerformance(assets);
+        if (containsDate) {
+            assetPerformance.setDatePerformance(pastDate);
+            persistPerformance(assetPerformance);
+        }
+        return assetPerformance;
+    }
+
+    private void persistPerformance(AssetPerformance assetPerformance) {
+        try {
+            performanceRepository.save(assetPerformance);
+        } catch (DataIntegrityViolationException e) {
+            log.error("Performance for date {} could not be saved, already existent.", assetPerformance.getDatePerformance());
+        }
+    }
+
+    private static AssetPerformance calculateAssetsPerformance(List<Asset> assets) {
         var asset = assets.get(0);
         var result = assetPerformance(asset);
 
@@ -80,7 +106,7 @@ public class WalletService {
             // Update total value from the wallet
             totalValue = totalValue.add(assetAmount(asset));
         }
-        return new AssetsPerformanceDTO(totalValue, bestAssetSymbol, bestPerformance, worstAssetSymbol, worstPerformance);
+        return new AssetPerformance(totalValue, bestAssetSymbol, bestPerformance, worstAssetSymbol, worstPerformance, LocalDate.now());
     }
 
     private List<Asset> assetsWithPastPrice(LocalDate pastDate, List<Asset> assets) {
