@@ -97,6 +97,9 @@ To set up and run the project locally:
 - **Maven 3.8+**
 - Any IDE (e.g., IntelliJ, Eclipse, VS Code)
 
+### Arguments
+- frequency (control the periodicity of asset price updates internally in seconds, default is 5s)
+
 ### Steps
 
 1. Clone the repository:
